@@ -1,0 +1,37 @@
+[package]
+name = "bevy_playdate"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.cargo-xbuild]
+memcpy = false
+sysroot_path = "target/sysroot"
+panic_immediate_abort = false
+
+[profile.dev]
+panic = "abort"
+opt-level = 'z'
+lto = true
+
+[profile.release]
+panic = "abort"
+opt-level = 'z'
+lto = true
+
+[dependencies]
+bevy = { path = "../bevy", default-features = false, features = ["no_std"] }
+
+crankstart = { path = "../crankstart" }
+crankstart-sys = { path = "../crankstart/crankstart-sys" }
+anyhow = { version = "1.0.31", default-features = false }
+euclid = { version = "0.22.9", default-features = false, features = [ "libm" ] }
+hashbrown = "0.14.0"
+cortex-m = { version = "0.7", features = ["critical-section-single-core"]}
+critical-section = "1"
+getrandom = { version = "0.2", defautl-features = false, features = ["custom"] }
+rand = { version = "0.8", default-features = false, features = ["small_rng"] }
+
+[[example]]
+name = "hello_world"
+path = "examples/hello_world.rs"
+crate-type = ["staticlib", "cdylib"]
