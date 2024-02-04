@@ -1,14 +1,17 @@
 #![no_std]
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::Instant};
 #[cfg(cortex_m)]
 use cortex_m as _;
 use rand::{Rng, SeedableRng};
+use sprites::PdSpritePlugin;
 
 extern crate alloc;
 extern crate bevy;
-#[macro_use]
 extern crate getrandom;
+
+pub mod prelude;
+pub mod sprites;
 
 use {
     alloc::boxed::Box,
@@ -27,9 +30,10 @@ impl<G: PlaydateBevyGame> PlaydateBevyState<G> {
         G::new(&mut app, _playdate).map(|game| Box::new(Self(app, *game)))
     }
 
-    pub fn new(_playdate: &Playdate) -> Result<Box<Self>, Error> {
-        let mut app = App::new();
-        Self::new_app(app, _playdate)
+    pub fn new(playdate: &Playdate) -> Result<Box<Self>, Error> {
+        Instant::register(playdate.playdate);
+        let app = App::new();
+        Self::new_app(app, playdate)
     }
 }
 
@@ -37,6 +41,14 @@ impl<G: PlaydateBevyGame> Game for PlaydateBevyState<G> {
     fn update(&mut self, _playdate: &mut Playdate) -> Result<(), Error> {
         self.0.update();
 
+        Ok(())
+    }
+
+    fn update_sprite(
+        &mut self,
+        _sprite: &mut crankstart::sprite::Sprite,
+        _playdate: &mut Playdate,
+    ) -> Result<(), Error> {
         Ok(())
     }
 }
@@ -59,11 +71,14 @@ mod bad_critical_section {
     }
 }
 
+const SEED_MASK: u64 = 0xdeadbeefbadc0ded;
+
 fn getrandom_seeded(dest: &mut [u8]) -> Result<(), getrandom::Error> {
     let seconds = crankstart::system::System::get()
         .get_seconds_since_epoch()
         .unwrap();
     let seed = seconds.1 as u64 + (seconds.0 as u64) << 32;
+    let seed = SEED_MASK ^ seed;
 
     let mut rng = rand::rngs::SmallRng::seed_from_u64(seed);
     rng.fill(dest);

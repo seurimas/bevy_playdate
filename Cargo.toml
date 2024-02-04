@@ -35,3 +35,8 @@ rand = { version = "0.8", default-features = false, features = ["small_rng"] }
 name = "hello_world"
 path = "examples/hello_world.rs"
 crate-type = ["staticlib", "cdylib"]
+
+[[example]]
+name = "sprites"
+path = "examples/sprites.rs"
+crate-type = ["staticlib", "cdylib"]
